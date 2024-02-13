@@ -1,0 +1,71 @@
+%%
+Gradient Boosting
+Gradient boosting is a method that goes through cycles to iteratively add models into an ensemble.
+
+It begins by initializing the ensemble with a single model, whose predictions can be pretty naive. (Even if its predictions are wildly inaccurate, subsequent additions to the ensemble will address those errors.)
+
+Then, we start the cycle:
+
+First, we use the current ensemble to generate predictions for each observation in the dataset. To make a prediction, we add the predictions from all models in the ensemble.
+These predictions are used to calculate a loss function (like mean squared error, for instance).
+Then, we use the loss function to fit a new model that will be added to the ensemble. Specifically, we determine model parameters so that adding this new model to the ensemble will reduce the loss. (Side note: The "gradient" in "gradient boosting" refers to the fact that we'll use gradient descent on the loss function to determine the parameters in this new model.)
+Finally, we add the new model to ensemble, and ...
+... repeat!
+%
+----------------------------------------------------------------------------------------------------------
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+# Read the data
+data = pd.read_csv('../input/melbourne-housing-snapshot/melb_data.csv')
+
+# Select subset of predictors
+cols_to_use = ['Rooms', 'Distance', 'Landsize', 'BuildingArea', 'YearBuilt']
+X = data[cols_to_use]
+
+# Select target
+y = data.Price
+
+# Separate data into training and validation sets
+X_train, X_valid, y_train, y_valid = train_test_split(X, y)
+
+from xgboost import XGBRegressor
+from sklearn.metrics import mean_absolute_error
+
+my_model = XGBRegressor(n_estimators = 500)
+my_model.fit(X_train, y_train) 
+predictions = my_model.predict(X_valid)
+print("Mean Absolute Error: " + str(mean_absolute_error(predictions, y_valid)))
+
+%% 
+n_estimators specifies how many times to go through the modeling cycle described above.
+It is equal to the number of models that we include in the ensemble.
+①Too low a value causes underfitting, which leads to inaccurate predictions on both training data and test data.
+②Too high a value causes overfitting, which causes accurate predictions on training data, but inaccurate predictions on test data
+
+early_stopping_rounds
+early_stopping_rounds offers a way to automatically find the ideal value for n_estimators. Early stopping causes the model to stop iterating when the validation score stops improving, even if we aren't at the hard stop for n_estimators. It's smart to set a high value for n_estimators and then use early_stopping_rounds to find the optimal time to stop iterating.
+
+Since random chance sometimes causes a single round where validation scores don't improve, you need to specify a number for how many rounds of straight deterioration to allow before stopping. Setting early_stopping_rounds=5 is a reasonable choice. In this case, we stop after 5 straight rounds of deteriorating validation scores.
+
+When using early_stopping_rounds, you also need to set aside some data for calculating the validation scores - this is done by setting the eval_set parameter.
+
+在 XGBoost 模型中，eval_set 参数用于指定一个用于验证模型性能的数据集。它通常是一个元组列表，每个元组包含一个特征矩阵和对应的标签，例如 [(X_valid, y_valid)]。
+learning_rate：
+
+learning_rate 是梯度下降算法中的一个重要参数，用于控制每次迭代中参数更新的步长。它决定了模型在每次迭代中应该学习多少新信息。
+较小的 learning_rate 会使模型学习得更慢，但可能会得到更好的性能；而较大的 learning_rate 可能会导致模型在训练集上过拟合。
+通常情况下，你需要通过交叉验证等技术来选择一个合适的 learning_rate 值。
+n_jobs：
+
+n_jobs 参数用于指定模型在训练和预测过程中并行计算所使用的 CPU 核心数量。
+当 n_jobs 设置为 -1 时，模型将使用计算机上的所有可用 CPU 核心进行并行计算。如果设置为 1，则不进行并行计算。
+使用并行计算可以加快模型的训练和预测速度，尤其是当数据集较大时。
+
+%%
+
+my_model = XGBRegressor(n_estimators=500,learning_rate=0.05, n_jobs=4)
+my_model.fit(X_train, y_train, 
+             early_stopping_rounds=5, 
+             eval_set=[(X_valid, y_valid)],
+             verbose=False)
