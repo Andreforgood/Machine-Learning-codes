@@ -1,0 +1,23 @@
+#Now we define the function using Gauss-Jordan elimination to get the inverse of a matrix
+def inverse_with_gauss_jordan(matrix):
+    a = matrix
+    rows,cols = a.shape 
+    # 将 A 与单位矩阵 I 进行并行操作，并记为矩阵b
+    I = np.eye(rows)
+    b = np.hstack((a, I)) #这里也可使用将a用tolist转换为list型矩阵进行+的操作，再转换为np型矩阵便于后续消去法的进行
+    
+    # Guass-Jordan 消去法
+    for i in range(rows):
+        # 将主元标准化为1
+        if b[i, i] == 0:
+            raise ValueError("Matrix is not invertible")
+        b[i] /= b[i, i]
+        
+        # 消除其他列的对应元素
+        for j in range(rows):
+            if i != j:
+                b[j] = b[j] - (b[j, i] / b[i, i]) * b[i]
+    # 提取逆矩阵
+    inverse_matrix = b[:, rows:]
+
+    return inverse_matrix
