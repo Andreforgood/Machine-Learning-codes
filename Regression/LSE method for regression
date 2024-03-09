@@ -1,0 +1,31 @@
+def LSEapproach(number_basis, data, lamb):
+    b = np.array(data['y'])
+    
+    n = number_basis #则基底项次数到达x^(n-1)
+    #所求x向量 = (ATA)^(-1)ATb 现在需要写出A矩阵
+    a1 = np.array(data['x'])
+    row = data.shape[0]
+    a1 = a1[:, np.newaxis] #转为2维列向量
+    a2 = np.hstack((a1,np.ones((row,1))))
+    new_vector = a1
+    A = a2
+    if n>2:
+        for i in range(n-2):
+            new_vector = new_vector * a1 
+            a2 = np.hstack((new_vector,a2))
+        A = a2
+        lamb_I = lamb*np.eye(n)
+        x = (inverse_with_gauss_jordan(A.T @ A+ lamb_I)) @ A.T @ b 
+        #其中x为高次项在上，依次往下次数递减的拟合系数
+        Total_loss = (A@x-b).T @(A@x-b)+lamb* x.T@x
+        print('Total loss is:',Total_loss)
+        return x
+    elif n == 1:
+        raise  ValueError('meaningless')
+    else:
+        lamb_I = lamb*np.eye(n)
+        x = (inverse_with_gauss_jordan(A.T @ A+ lamb_I)) @ A.T @ b
+        Total_loss = (A@x-b).T @(A@x-b)+lamb* x.T@x
+        print('Total loss is:',Total_loss)
+        return x
+    
