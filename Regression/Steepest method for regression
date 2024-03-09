@@ -1,0 +1,13 @@
+def polynomial_basis(x, n):
+    return np.vander(x, N=n+1, increasing=True)
+    #此为调用vandermonde矩阵格式，构造N列的范德蒙矩阵，按往右递增的顺序，形成A矩阵
+    #这里与上述LSE不一样，n=1 代表用一次函数回归
+
+def fastest_gradient_descent(x, y, n, alpha = 0.0000001,iterations=1000):
+    A = polynomial_basis(x, n)
+    w = np.zeros(n+1) #要多一个常数系数
+    for i in range(iterations):
+        gradient = 2* A.T @ (np.dot(A,w) - y)
+        w = w - alpha * gradient
+    error = (np.linalg.norm(A@w-y))**2
+    return w,error
