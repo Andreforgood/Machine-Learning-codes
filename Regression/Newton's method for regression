@@ -1,0 +1,18 @@
+# 多项式基函数
+def polynomial_basis(x, n):
+    return np.vander(x, N=n+1, increasing=True)
+    #此为调用vandermonde矩阵格式，构造N列的范德蒙矩阵，按往右递增的顺序，形成A矩阵
+    #这里与上述LSE不一样，n=1 代表用一次函数回归
+
+#newton's method:
+def newtons_method(x, y, n, iterations=10):
+    A = polynomial_basis(x, n)  #定义迭代矩阵A
+    m = len(y) #点的数量
+    w = np.zeros(n+1)   #生成多项式系数的存储数列，初始化为0
+    for i in range(iterations):  #开始迭代
+        gradient = 2 * np.dot(A.T, np.dot(A, w)-y) #二范数一阶导
+        Hessian = 2 * np.dot(A.T, A)  #二范数二阶导
+        Hessian_inverse = inverse_with_gauss_jordan(Hessian)
+        w = w - np.dot(Hessian_inverse, gradient)
+    error = (np.linalg.norm(A@w-y))**2
+    return w, error
