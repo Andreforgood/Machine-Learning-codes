@@ -1,0 +1,39 @@
+
+
+import numpy as np
+import struct
+
+# Function to read and parse MNIST image file
+def read_mnist_images(file_path):
+    with open(file_path, 'rb') as file:
+        magic, num_images, rows, cols = struct.unpack(">IIII", file.read(16)) #>IIII"表示使用大端字节序（>）,然后是四个无符号整数（I）,读了16个字节
+        images = np.fromfile(file, dtype=np.uint8).reshape(num_images, rows, cols) # 这个调用从文件中读取二进制数据，并将其解析为NumPy数组
+    return images
+
+
+
+# Function to read and parse MNIST label file
+def read_mnist_labels(file_path):
+    with open(file_path, 'rb') as file:
+        magic, num_labels = struct.unpack(">II", file.read(8))
+        labels = np.fromfile(file, dtype=np.uint8)
+    return labels
+
+# File paths
+train_images_path = r"C:\Users\Synlim\Desktop\ML_HW2\train-images.idx3-ubyte_"
+train_labels_path = r"C:\Users\Synlim\Desktop\ML_HW2\train-labels.idx1-ubyte_"
+test_images_path = r"C:\Users\Synlim\Desktop\ML_HW2\t10k-images (1).idx3-ubyte_"
+test_labels_path = r"C:\Users\Synlim\Desktop\ML_HW2\t10k-labels.idx1-ubyte_"
+
+# Reading and parsing the files
+train_images = read_mnist_images(train_images_path)
+train_labels = read_mnist_labels(train_labels_path)
+test_images = read_mnist_images(test_images_path)
+test_labels = read_mnist_labels(test_labels_path)
+
+# Check the shape of the arrays to confirm successful parsing
+print((train_images.shape, train_labels.shape, test_images.shape, test_labels.shape))
+print(train_images)
+print(train_labels)
+print(test_images)
+print(test_labels)
