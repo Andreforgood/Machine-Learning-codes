@@ -1,2 +1,2 @@
 # intro-to-ML1
-learning codes1
+learning codes, and project codes
