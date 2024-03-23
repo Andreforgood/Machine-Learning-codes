@@ -1,0 +1,47 @@
+#This is discretizing the 255 pixel values into 32 bins
+
+def discrete_images(images, num_bins = 32):
+    
+    images = images/255.0
+    bins = np.linspace(0, 1, num_bins)
+    discrete = np.digitize(images,bins) - 1  #let the index start from 0 instead of 1
+    return discrete
+
+#This is calculating the prior and the likelihood(conditional)
+def prob_calculated(images, labels, num_bins = 32):
+    num_class = 10
+    prior_prob = np.zeros(num_class)
+    cond_prob = np.zeros((num_class, 28, 28, num_bins))  #given the number, the prob of appearance of certain pixel values 
+    for i in range(num_class):
+        class_images = images[labels == i] #e.g. we get all images that have number '7'
+        prior_prob[i] = len(class_images) / len(images)
+        
+        #now we calculate the cond_prob: P(pixel_val is (row，col，belong to bin_k)|θ(class))
+        for row in range(28):
+            for col in range(28): #find each pixel point
+                pixel_bin = class_images[:,row,col] #for all images corresponding to a single number, their pixel_value at pixel point(row,col)
+                for bins in range(num_bins):  
+                    #use Laplace smoothing, alpha == 1, N == len(class_images)
+                    cond_prob[i,row,col,bins] = (np.sum(pixel_bin == bins) + 1) / (len(class_images) + num_bins)
+    return prior_prob, cond_prob
+
+#use bayes equation to get predictions
+def Naive_Bayes_Classifier(test_images, prior_prob, cond_prob, num_bins = 32):
+    predictions = []
+    num_class = 10
+    for image in test_images: #对每一张待测试图
+        #we calculate the posterior for each class 0-9, and get the max one.
+        log_post = np.log(prior_prob)
+        for row in range(28):
+            for col in range(28):
+                pixel_bin = image[row,col]
+                for i in range(num_class): #for each class
+                    log_post[i] = log_post[i] + np.log(cond_prob[i,row,col,pixel_bin]) #迭代一次，修正一次post数据，并作为下一次的prior
+                    #每张图，将每一个像素值的条件概率进行迭代累加
+        predictions.append(np.argmax(log_post))
+        log_post = (log_post / np.sum(log_post)) #归一化
+        print(log_post, np.argmin(log_post))
+    
+    return predictions
+    
+        
