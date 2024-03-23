@@ -1,0 +1,23 @@
+#Here we need to deal with the situation that the normal distribution can meet \sigma = 0 and log(prob) = -Inf,
+#so we need to find a boundary to keep log(prob) small but not small to -Inf
+
+def Continuous_Bayes_Classifier1(test_images, prior, mean_class, var_class):
+    predictions_continuous = []
+    for image in tqdm(test_images):
+        log_pdf = np.log(prior)
+        #calculate prob for each 'number'
+        for i in (range(num_class)):
+            for row in range(28):
+                for col in range(28):
+                    y = gaussian_probability(image[row,col],mean_class[i,row,col],np.sqrt(var_class[i,row,col]))
+                    if y<1e-323:
+                        y = 1e-323
+                    x = np.log(y)
+                    log_pdf[i] = log_pdf[i] + x
+        
+        predictions_continuous.append(np.argmax(log_pdf))
+        
+        #log_pdf = (log_pdf / np.sum(log_pdf)) #归一化
+        print(log_pdf, np.argmax(log_pdf))
+    return predictions_continuous
+                
