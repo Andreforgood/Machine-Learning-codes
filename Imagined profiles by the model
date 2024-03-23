@@ -1,0 +1,22 @@
+#Now we code the imagination of my Classifier
+num_class = 10
+threshold = 15
+imagined = np.zeros((num_class,28,28))
+
+for i in range(num_class):
+    for row in range(28):
+        for col in range(28):
+            bw_prob = np.sum(cond_prob[i,row,col,threshold:])
+            if (bw_prob > 0.5):
+                imagined[i,row,col] = 1
+            else:
+                imagined[i,row,col] = 0
+print(imagined)
+
+fig, axes = plt.subplots(1, 10, figsize=(20, 2))
+#创建一个包含10个子图的图形，并设置图形大小为20x2。fig是整个图形对象，axes是包含子图对象的数组 1行10列
+for i in range(num_class):
+    axes[i].imshow(imagined[i], cmap='gray')
+    axes[i].axis('off')
+    axes[i].set_title(str(i))
+plt.show()
