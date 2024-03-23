@@ -1,0 +1,11 @@
+discrete_train_images = discrete_images(train_images)
+discrete_test_images = discrete_images(test_images)
+
+prior_prob,cond_prob = prob_calculated(discrete_train_images,train_labels)
+
+predictions = Naive_Bayes_Classifier(discrete_test_images, prior_prob, cond_prob)
+
+error_rate = np.mean(predictions != test_labels)
+print(error_rate)
+
+#which is 0.1536
