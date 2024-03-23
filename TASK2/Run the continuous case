@@ -1,0 +1,25 @@
+num_class = 10
+mean_class = np.zeros((num_class,28,28))
+var_class = np.zeros((num_class,28,28))
+prior = []
+
+for i in range(num_class):
+    class_train_image = train_images[train_labels == i]
+#    for row in range(28):
+#        for col in range(28):
+#            mean_class[i,row,col] = np.mean(class_train_image[:,row,col])
+    mean_class[i] = np.mean(class_train_image, axis = 0) #第一个维度被求均值
+    var_class[i] = np.var(class_train_image, axis = 0)    
+    prior.append(len(class_train_image) / len(train_images))
+
+var_class = var_class+ 1
+#mean_class = mean_class + 0.000001
+print(prior)
+#print(mean_class)
+print(var_class)
+
+predictions_continuous1 = Continuous_Bayes_Classifier1(test_images, prior, mean_class, var_class)
+
+#outcome is 0.3178
+
+The value of σ may need to be optimized...
