@@ -1,0 +1,39 @@
+def polynomial_basis_linear_model_generator(basis_number, coefficients, noise_variance):
+    if len(coefficients) != basis_number:
+        raise ValueError("Length of coefficients must match the basis number")
+    
+    # Draw x from a uniform distribution between -1 and 1
+    x = np.random.uniform(-1, 1)
+    # Evaluate the polynomial at x
+    y = sum(coef * x**i for i, coef in enumerate(coefficients)) #default index starts from 0
+    # Add Gaussian noise to y
+    y += univariate_gaussian_data_generator(0, noise_variance)
+    
+    return (x, y)
+
+# Test the generator with example values
+basis_number = 3  # Polynomial of degree 2
+coefficients = [1, -2, 3]  # Coefficients for the polynomial 1 - 2x + 3x^2
+noise_variance = 0.5
+x,y = polynomial_basis_linear_model_generator(basis_number, coefficients, noise_variance)
+
+
+def sequential_estimator(mean, variance):
+    n = 0
+    current_mean = 0.0
+    current_variance = 0.0
+    while True:
+        data_point = univariate_gaussian_data_generator(mean, variance) #生成一个点
+        n += 1
+        prev_mean = current_mean
+        current_mean = prev_mean + (data_point - prev_mean) / n
+        current_variance = ((n - 2) / (n - 1)) * current_variance + (data_point - current_mean)**2 / n if n > 1 else 0 
+        #Ternary Expression and Sample variance
+        yield (data_point, current_mean, current_variance)
+
+# Example: Generating and estimating for a Gaussian with mean 3 and variance 5
+generator = sequential_estimator(3, 5)
+for i in range(10000):  # Number of iteration
+    data_point, estimated_mean, estimated_variance = next(generator)
+    print(f"Add Data Point: {data_point:.5f}, Estimated Mean: {estimated_mean:.5f}, Estimated Variance: {estimated_variance:.5f}")
+    
