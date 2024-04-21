@@ -1,0 +1,62 @@
+# Q3: Baysian Linear regression
+def polynomial_basis(x, n):
+    return np.vander(x, N=n, increasing=True)
+    #此为调用vandermonde矩阵格式，构造N列的范德蒙矩阵，按往右递增的顺序，形成A矩阵
+    #n为基底个数
+
+def bayesian_linear_regression(b, n, a, w, iterations):
+    current_Sn = (1/b) * np.identity(n)
+    current_mn = np.zeros((n, 1)) 
+    total_x = [] 
+    total_y = []
+
+    mn_10 = []
+    mn_50 = []
+    mn_final = []
+    Sn_10 = 0
+    Sn_50 = 0
+    Sn_final = 0
+    for i in range(iterations):
+        
+        x,y = polynomial_basis_linear_model_generator(n, w, a)
+        total_x.append(x)
+        total_y.append(y)
+        x = np.array([x])
+        # Construct the design matrix for the new data point
+        Phi = polynomial_basis(x, n)
+    
+        # Bayesian update for the covariance matrix (Sn)
+        Sn_inv = (1/a) * Phi.T @ Phi + np.linalg.inv(current_Sn)
+        Sn = np.linalg.inv(Sn_inv)
+    
+        # Bayesian update for the mean vector (mn)
+        mn = Sn @ (np.linalg.inv(current_Sn) @ current_mn + (1/a) * Phi.T * y)
+        if i == 10:
+            mn_10.append(mn)
+            Sn_10 = Sn
+        if i == 50:
+            mn_50.append(mn)
+            Sn_50 = Sn
+        if i == iterations-1:
+            mn_final.append(mn)
+            Sn_final = Sn
+        
+        #parameters for the predictive distribution
+        pre_miu = Phi @ current_mn
+        pre_miu = pre_miu[0,0]
+        pre_cov = a + Phi @ current_Sn @ Phi.T
+        pre_cov = pre_cov[0,0]
+        pre_std = np.sqrt(pre_cov)
+        
+        print(f'Add data point({x, y})')
+        print('posterior mean:')
+        print(mn)
+        print('posterior variance:')
+        print(np.array2string(Sn, suppress_small=True))
+        print(f'predictive distribution ~ N({pre_miu, pre_cov})')
+        print('\n')
+        current_Sn = Sn
+        current_mn = mn
+    return total_x, total_y, mn_10,mn_50,Sn_10,Sn_50,mn_final,Sn_final
+
+total_x, total_y, mn_10,mn_50 ,Sn_10,Sn_50,mn_final,Sn_final= bayesian_linear_regression(b = 1, n = 4, a = 1, w = [1, 2, 3,4], iterations = 1000)
