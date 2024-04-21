@@ -1,0 +1,80 @@
+import matplotlib.pyplot as plt
+
+n = 4
+a = 1
+w_true = [1, 2, 3,4]  
+x_observed = total_x  # 观测数据点的x值
+y_observed = total_y
+x_values = np.linspace(-2, 2, 400)  # 预测结果的x值范围
+
+y_expect_mean10 = []
+y_pred_std10 = []
+y_expect_mean50 = []
+y_pred_std50 = []
+y_expect_mean_final = []
+y_pred_std_final = []
+for i in range(len(x_values)):
+    x = np.array([x_values[i]])
+    
+    phi10 = polynomial_basis(x, n)
+    y_expect_mean10.append((phi10 @ mn_10)[0,0,0])
+    y_pred_std10.append(np.sqrt((a + phi10 @ Sn_10 @ phi10.T)[0,0]))
+    
+    phi50 = polynomial_basis(x, n)
+    y_expect_mean50.append((phi50 @ mn_50)[0,0,0])
+    y_pred_std50.append(np.sqrt((a + phi50 @ Sn_50 @ phi50.T)[0,0]))
+    
+    phi_final = polynomial_basis(x, n)
+    y_expect_mean_final.append((phi_final @ mn_final)[0,0,0])
+    y_pred_std_final.append(np.sqrt((a + phi_final @ Sn_final @ phi_final.T)[0,0]))
+    
+
+result_minus10 = [a - b for a, b in zip(y_expect_mean10, y_pred_std10)]
+result_plus10 = [a + b for a, b in zip(y_expect_mean10, y_pred_std10)]
+result_minus50 = [a - b for a, b in zip(y_expect_mean50, y_pred_std50)]
+result_plus50 = [a + b for a, b in zip(y_expect_mean50, y_pred_std50)]
+result_minus_final = [a - b for a, b in zip(y_expect_mean_final, y_pred_std_final)]
+result_plus_final = [a + b for a, b in zip(y_expect_mean_final, y_pred_std_final)]
+
+# Ground truth函数
+y_true = w_true[0] + w_true[1]*x_values + w_true[2]*x_values**2 + w_true[3]*x_values**3
+#y_true = w_true[0] + w_true[1]*x_values + w_true[2]*x_values**2
+# 创建四个子图
+fig, axs = plt.subplots(2, 2, figsize=(15, 10))
+
+# Ground truth
+y_posterior_std = np.full(x_values.shape, 1.0)
+axs[0, 0].plot(x_values, y_true, 'black', label='Ground truth')
+axs[0, 0].fill_between(x_values, y_true - y_posterior_std, y_true + y_posterior_std, color='red', alpha=0.2)
+axs[0, 0].set_title('Ground truth')
+
+# Predict result after 10 incomes
+axs[0, 1].scatter(x_observed[:10], y_observed[:10], color='blue')  # 只取前10个观测点
+axs[0, 1].plot(x_values, y_expect_mean10, 'black', label='Predicted mean')
+axs[0, 1].fill_between(x_values, result_minus10, result_plus10, color='red', alpha=0.2)
+axs[0, 1].set_title('After 10 points')
+
+# Predict result after 50 incomes
+axs[1, 0].scatter(x_observed[:50], y_observed[:50], color='blue')  # 只取前50个观测点
+axs[1, 0].plot(x_values, y_expect_mean50, 'black', label='Predicted mean')
+axs[1, 0].fill_between(x_values, result_minus50, result_plus50, color='red', alpha=0.2)
+axs[1, 0].set_title('After 50 points')
+
+# Final predict result
+axs[1, 1].scatter(x_observed, y_observed, color='blue')  # 所有观测点
+axs[1, 1].plot(x_values, y_expect_mean_final, 'black', label='Predicted mean')
+axs[1, 1].fill_between(x_values, result_minus_final, result_plus_final, color='red', alpha=0.2)
+axs[1, 1].set_title('Final predict result')
+
+# 设置标签和图例
+for ax in axs.flat:
+    ax.set(xlabel='x', ylabel='y')
+    ax.legend()
+
+# 隐藏不使用的子图
+#for ax in axs.flat[len(w_true):]:
+    #ax.set_visible(False)
+
+# 调整布局
+plt.tight_layout()
+plt.show()
