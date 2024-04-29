@@ -1,0 +1,76 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def map_clusters_to_labels(responsibilities, labels, num_clusters=10):
+    """ Map each cluster to a digit label by finding the most frequent true label in each cluster. """
+    cluster_labels = np.argmax(responsibilities, axis=1)
+    mapped_labels = np.zeros(num_clusters, dtype=int)
+    
+    for k in range(num_clusters):
+        # Find the most common true label in each cluster
+        true_labels_k = labels[cluster_labels == k]
+        if len(true_labels_k) > 0:
+            mapped_labels[k] = np.bincount(true_labels_k).argmax()
+    
+    return mapped_labels
+
+def predict_labels(responsibilities, mapped_labels):
+    """使用责任矩阵和映射标签来生成预测标签。"""
+    cluster_indices = np.argmax(responsibilities, axis=1)
+    return mapped_labels[cluster_indices]
+
+def manual_confusion_matrix(true_labels, pred_labels, num_classes=10):
+    """手动计算混淆矩阵。"""
+    cm = np.zeros((num_classes, num_classes), dtype=int)
+    for true, pred in zip(true_labels, pred_labels):
+        cm[true, pred] += 1
+    return cm
+
+def calculate_sensitivity_specificity(cm):
+    """计算敏感性和特异性，处理除零的情况。"""
+    sensitivity = np.zeros(cm.shape[0])
+    specificity = np.zeros(cm.shape[0])
+    
+    for i in range(cm.shape[0]):
+        TP = cm[i, i]
+        FN = np.sum(cm[i, :]) - TP
+        FP = np.sum(cm[:, i]) - TP
+        TN = np.sum(cm) - (TP + FN + FP)
+        
+        sensitivity[i] = TP / (TP + FN) if (TP + FN) > 0 else 0
+        # Avoid division by zero in specificity calculation
+        specificity[i] = TN / (TN + FP) if (TN + FP) > 0 else 0
+    
+    return sensitivity, specificity
+
+def print_confusion_matrices(cm, sensitivity, specificity):
+    """打印每个数字的混淆矩阵及其敏感性和特异性。"""
+    for i in range(cm.shape[0]):
+        print(f"Confusion Matrix {i}:")
+        print(f"{' ':<17}Predict number {i} Predict not number {i}")
+        print(f"Is number {i:<11}{cm[i, i]:<17}{np.sum(cm[i, :]) - cm[i, i]:<17}")
+        print(f"Isn't number {i:<4}{np.sum(cm[:, i]) - cm[i, i]:<17}{np.sum(cm) - np.sum(cm[i, :]) - np.sum(cm[:, i]) + cm[i, i]:<17}")
+        print(f"Sensitivity (Successfully predict number {i}): {sensitivity[i]:.5f}")
+        print(f"Specificity (Successfully predict not number {i}): {specificity[i]:.5f}")
+        print("-" * 56)
+
+def print_total_iterations_error_rate(cm, total_iterations):
+    """打印总迭代次数和总错误率。"""
+    # 总错误数是混淆矩阵非对角线元素的总和
+    total_errors = np.sum(cm) - np.trace(cm)
+    # 总样本数是混淆矩阵所有元素的总和
+    total_samples = np.sum(cm)
+    # 总错误率
+    total_error_rate = total_errors / total_samples
+
+    print(f"Total Iterations: {total_iterations}")
+    print(f"Total Error Rate: {total_error_rate:.5f}")
+
+
+# 使用这些函数
+mapped_labels = map_clusters_to_labels(responsibilities, labels, num_clusters=10)
+pred_labels = predict_labels(responsibilities, mapped_labels)
+cm = manual_confusion_matrix(labels, pred_labels)
+sensitivity, specificity = calculate_sensitivity_specificity(cm)
+print_confusion_matrices(cm, sensitivity, specificity)
+print_total_iterations_error_rate(cm, total_iterations = 10)
