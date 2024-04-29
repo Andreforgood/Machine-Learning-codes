@@ -1,0 +1,40 @@
+def predict(X, weights):
+    # Compute the probabilities using the logistic function
+    probs = 1 / (1 + np.exp(-np.dot(X, weights)))
+    # Convert probabilities to class labels based on a 0.5 threshold
+    predictions = np.where(probs >= 0.5, 1, 0)
+    return predictions
+
+def confusion_matrix(y_true, y_pred):
+    # Initialize the confusion matrix elements
+    TP = FN = FP = TN = 0
+    
+    # Calculate TP, TN, FP, FN
+    for actual, predicted in zip(y_true, y_pred):
+        if actual == 1 and predicted == 1:
+            TP += 1
+        elif actual == 1 and predicted == 0:
+            FN += 1
+        elif actual == 0 and predicted == 1:
+            FP += 1
+        elif actual == 0 and predicted == 0:
+            TN += 1
+    
+    return TP, TN, FP, FN
+
+def print_confusion_matrix(TP, TN, FP, FN):
+    print("Confusion Matrix:")
+    print(f"{'Predict cluster 1':<20}{'Predict cluster 2':<20}")
+    print(f"{'Is cluster 1':<20}{TP:<20}{FP:<20}") #将被左对齐，并且字段的宽度被设置为20个字符
+    print(f"{'Is cluster 2':<20}{FN:<20}{TN:<20}")
+    print()
+    # Calculate sensitivity and specificity
+    sensitivity = TP / (TP + FN) if TP + FN else 0
+    specificity = TN / (TN + FP) if TN + FP else 0
+    print(f"Sensitivity (Successfully predict cluster 1): {sensitivity:.5f}")
+    print(f"Specificity (Successfully predict cluster 2): {specificity:.5f}")
+
+
+pred1 = predict(X1, w1)
+TP, TN, FP, FN = confusion_matrix(y1, pred1)
+print_confusion_matrix(TP, TN, FP, FN)
