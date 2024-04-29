@@ -1,0 +1,95 @@
+#EM Algorithm
+#Image processing
+import numpy as np
+import struct
+
+def read_images(filename):
+    with open(filename, 'rb') as f:
+        magic, num, rows, cols = struct.unpack(">IIII", f.read(16))
+        images = np.fromfile(f, dtype=np.uint8).reshape(num, rows * cols)
+    return images
+
+def read_labels(filename):
+    with open(filename, 'rb') as f:
+        magic, num = struct.unpack(">II", f.read(8))
+        labels = np.fromfile(f, dtype=np.uint8)
+    return labels
+
+images = read_images(r"C:\Users\Synlim\Downloads\train-images.idx3-ubyte_")
+labels = read_labels(r"C:\Users\Synlim\Downloads\train-labels.idx1-ubyte_")
+print(labels)
+print(images)
+
+#rand 函数会生成指定形状的、服从均匀分布的随机数数组。
+import numpy as np
+
+def binarize_images(images):
+    # 使用128作为阈值进行二值化
+    return (images >= 128).astype(int) #Bool值转换为1/0
+
+import numpy as np
+
+def initialize_parameters(num_clusters, num_pixels):
+    """ Initialize the Bernoulli parameters and cluster probabilities randomly. """
+    pis = np.random.dirichlet(alpha=np.ones(num_clusters), size=1).flatten()
+    thetas = np.random.beta(a=2, b=2, size=(num_clusters, num_pixels))
+    return pis, thetas
+
+def e_step(images, pis, thetas):
+    """ Compute the responsibilities for each cluster given the images. """
+    num_clusters = len(pis)
+    responsibilities = np.zeros((images.shape[0], num_clusters))
+    
+    for n in tqdm(range(images.shape[0]), desc = 'e-step', leave = False):
+        for k in range(num_clusters):
+            likelihood = np.prod(thetas[k]**images[n] * (1-thetas[k])**(1-images[n]))
+            #responsibilities[n, k] = pis[k] * likelihood
+            responsibilities[n, k] = likelihood
+            
+        responsibilities[n, :] /= np.sum(responsibilities[n, :])
+        
+    return responsibilities
+
+def m_step(images, responsibilities):
+    """ Update the parameters (pis, thetas) given the current responsibilities. """
+    num_clusters = responsibilities.shape[1]
+    num_pixels = images.shape[1]
+    pis = np.mean(responsibilities, axis=0)
+    thetas = np.zeros((num_clusters, num_pixels))
+    
+    for k in tqdm(range(num_clusters), desc = 'm-step', leave = False):
+        for j in range(num_pixels):
+            thetas[k, j] = np.dot(responsibilities[:, k], images[:, j]) / np.sum(responsibilities[:, k])
+    
+    return pis, thetas
+
+def log_likelihood(images, pis, thetas):
+    """ Compute the log likelihood of the current model given the images. """
+    log_likelihood = 0
+    for image in tqdm(images, desc = 'log_cal', leave = False):
+        cluster_likelihoods = [np.sum(np.log(theta*image + (1-theta)*(1-image)+ 1e-323)) for theta in thetas] #对群循环
+        log_likelihood += np.log(np.dot(pis, np.exp(cluster_likelihoods)))
+    
+    return log_likelihood
+
+def em_algorithm(images, num_clusters, num_pixels, max_iters=10, tol=100):
+    """ The EM algorithm for clustering images. """
+    pis, thetas = initialize_parameters(num_clusters, num_pixels)
+    #log_likelihood_old = -np.inf
+    
+    for i in tqdm(range(max_iters), desc = 'em_iter'):
+        responsibilities = e_step(images, pis, thetas)
+        pis, thetas = m_step(images, responsibilities)
+        #log_likelihood_new = log_likelihood(images, pis, thetas)
+        
+        print(responsibilities)
+        #print(pis)
+        print(thetas)
+        #print(log_likelihood_new)
+        #if np.abs(log_likelihood_new - log_likelihood_old) < tol:
+        #    break
+        #log_likelihood_old = log_likelihood_new
+    
+    return pis, thetas, responsibilities
+
+pis, thetas, responsibilities =  em_algorithm(binarize_images(images), 10, 28*28)
