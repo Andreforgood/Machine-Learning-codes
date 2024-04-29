@@ -1,0 +1,18 @@
+This is about the visualization of the imaginary number of the trained model.
+
+import matplotlib.pyplot as plt
+def print_imagined_numbers(thetas):
+    """使用thetas参数来绘制想象的数字图像。"""
+    num_clusters = thetas.shape[0]
+    imagined_numbers = (thetas >= 0.4).astype(int)  # 二值化
+    
+    # 假设图像是28x28
+    fig, axes = plt.subplots(1, num_clusters, figsize=(20, 2))
+    for k in range(num_clusters):
+        ax = axes[k]
+        ax.imshow(imagined_numbers[k].reshape(28, 28), cmap='gray')
+        ax.title.set_text(f'Cluster {k}')
+        ax.axis('off')
+    plt.show()
+    
+print_imagined_numbers(thetas)
