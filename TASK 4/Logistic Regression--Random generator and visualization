@@ -1,0 +1,30 @@
+#random points generator
+import numpy as np
+from tqdm.notebook import tqdm
+np.random.seed(123)
+def normal_dist_generator(mean, var, n):
+    return np.random.normal(mean, np.sqrt(var), n)
+
+import matplotlib.pyplot as plt
+
+def plot_decision_boundary(X, y, weights):
+    # Filter examples by class
+    class_0 = X[y == 0]  #取出来的是一个一维数组[c,x,y]
+    class_1 = X[y == 1]
+    
+    # Plot class 0 and class 1 data points
+    plt.scatter(class_0[:, 1], class_0[:, 2], color='red', label='Class 0')
+    plt.scatter(class_1[:, 1], class_1[:, 2], color='blue', label='Class 1')
+    
+    # Generate x values from the minimum to the maximum x value
+    x_values = [np.min(X[:, 1] - 1), np.max(X[:, 1] + 1)]
+    
+    # Calculate the decision boundary (y = mx + b)
+    y_values = -(weights[0] + np.dot(weights[1], x_values)) / weights[2]
+    
+    # Plot the decision boundary
+    plt.plot(x_values, y_values, label='Decision Boundary')
+    plt.xlabel('X1')
+    plt.ylabel('X2')
+    plt.legend()
+    plt.show()
