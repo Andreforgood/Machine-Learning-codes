@@ -1,0 +1,25 @@
+# Below we will define a C-SVC model with RBF kernel, 
+# and then use grid search with 5-fold cross-validation to get the best parameters in the given grid.
+
+def run_svm_with_params(C, gamma):
+    param = f'-t 2 -c {C} -g {gamma} -v 5'  # -v 5 for 5-fold cross-validation
+    prob = svm_problem(Y_train, X_train)
+    return svm_train(prob, param)  # This returns the cross-validation accuracy
+
+# Grid of parameters
+Cs = [0.01, 0.1, 0.5, 1, 10, 20]
+gammas = [0.001, 0.01, 0.1, 1]
+
+best_score = 0
+best_params = {'C': None, 'gamma': None}
+
+# Grid search
+for C in Cs:
+    for gamma in gammas:
+        score = run_svm_with_params(C, gamma)
+        if score > best_score:
+            best_score = score
+            best_params = {'C': C, 'gamma': gamma}
+
+print(f"Best score: {best_score}")
+print(f"Best params: {best_params}")
