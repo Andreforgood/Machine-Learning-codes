@@ -1,0 +1,29 @@
+#Below are data input and define svm
+
+from libsvm.svmutil import svm_train, svm_predict, svm_parameter, svm_problem
+import numpy as np
+#loading data
+X_train = np.loadtxt('/Users/dongwenou/Downloads/ML_files/X_train.csv', delimiter=',')
+Y_train = np.loadtxt('/Users/dongwenou/Downloads/ML_files/Y_train.csv', delimiter=',').flatten()
+X_test = np.loadtxt('/Users/dongwenou/Downloads/ML_files/X_test.csv', delimiter=',')
+Y_test = np.loadtxt('/Users/dongwenou/Downloads/ML_files/Y_test.csv', delimiter=',').flatten()
+
+print(X_train)
+print(Y_train)
+print(Y_test)
+
+
+def run_svm(kernel_type, C=1):
+    param = svm_parameter(f'-t {kernel_type} -c {C} -b 1')  # basic params, -t is the kernel type, -c is the cost
+    prob = svm_problem(Y_train, X_train) #training data
+    model = svm_train(prob, param) #trained model
+    p_label, p_acc, p_val = svm_predict(Y_test, X_test, model) #prediction outcomes
+    print(f"Accuracy with kernel type {kernel_type}: {p_acc[0]}%")
+
+# Kernel types: 0 - linear, 1 - polynomial, 2 - RBF
+run_svm(0)  # Linear
+run_svm(1)  # Polynomial
+run_svm(2)  # RBF
+
+
+
