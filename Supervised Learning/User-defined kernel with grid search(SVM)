@@ -1,0 +1,51 @@
+Below we'll define the user-defined kernel matrix calculation function and the respective svm model.
+Then we still use grid search for the ideal combination of parameters.
+
+def compute_kernel_matrix(X, X2, alpha, gamma):
+    n1 = X.shape[0]
+    n2 = X2.shape[0]
+    K_linear = np.dot(X, X2.T) # linear kernel calculation
+    X_sq = np.sum(X**2, axis=1).reshape(n1, 1) # sum of squares of each row vector
+    X2_sq = np.sum(X2**2, axis=1).reshape(1, n2) # reshape is for the broadcasting summation
+    K_rbf = np.exp(-gamma * (X_sq + X2_sq - 2 * K_linear)) # RBF kernel calculation
+    return alpha * K_linear + (1 - alpha) * K_rbf
+
+def run_svm(K_train, K_test):
+    # np.arrange is used for generating a series
+    train_indices = np.arange(1, K_train.shape[0] + 1).reshape(-1, 1) #calculate the index for each image in training set
+    test_indices = np.arange(1, K_test.shape[0] + 1).reshape(-1, 1) # the same for testing data
+    K_train = np.hstack((train_indices, K_train)) 
+    # the first column of the resulting matrix is the index of each instance, 
+    # which is required by LIBSVM when using precomputed kernels.
+    K_test = np.hstack((test_indices, K_test)) # the same for testing kernel matrix
+    
+    # Train and predict using LIBSVM with a precomputed kernel
+    prob = svm_problem(Y_train, K_train, isKernel=True)
+    # instead of giving X_train, we assign the kernel matrix we calculated in advance.
+    # When isKernel=True is specified, 
+    # it indicates that the matrix provided is a precomputed kernel matrix rather than raw feature vectors
+    
+    param = svm_parameter('-t 4')  # Precomputed kernel type
+    model = svm_train(prob, param)
+    p_label, p_acc, p_val = svm_predict(Y_test, K_test, model)
+    return p_acc[0]
+
+
+#below is the same step as the second sub-question -- using grid search for a better combination of parameters.
+alphas = [0.1, 0.5, 0.9]
+gammas = [0.01, 0.05, 0.1, 1]
+
+best_score = 0
+best_params = {'alpha': None, 'gamma': None}
+
+for alpha in alphas:
+    for gamma in gammas:
+        K_train = compute_kernel_matrix(X_train, X_train, alpha, gamma)
+        K_test = compute_kernel_matrix(X_test, X_train, alpha, gamma)
+        score = run_svm(K_train, K_test)
+        if score > best_score:
+            best_score = score
+            best_params = {'alpha': alpha, 'gamma': gamma}
+
+print(f"Best score: {best_score}")
+print(f"Best params: {best_params}")
