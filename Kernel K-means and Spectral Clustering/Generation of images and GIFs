@@ -1,0 +1,22 @@
+# Get the png image of our final clustering result.
+
+def visualize_clusters(img, clusters, num_clusters, filename=None, return_image=False):
+    h, w, c = img.shape
+    clustered_img = np.zeros((h, w, c), dtype=np.uint8)
+    colors = np.random.randint(0, 255, (num_clusters, 3), dtype=np.uint8)
+    for i in range(h):
+        for j in range(w):
+            clustered_img[i, j] = colors[clusters[i * w + j]]
+    if filename:
+        imageio.imsave(filename, clustered_img)
+        print(f"Saved clustered image as {filename}")
+    if return_image:
+        return clustered_img
+
+
+# Get GIF.
+def save_animation(frames, filename, fps=10):
+    imageio.mimsave(filename, frames, fps=fps)
+    print(f"Saved animation as {filename}")
+    
+#This is a function for saving as GIF files.
