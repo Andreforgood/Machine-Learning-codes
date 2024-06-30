@@ -1,0 +1,28 @@
+# Normalized Cut
+def normalized_cut_clustering(X, K, num_clusters, img, save_frames=False, frame_prefix="frame"):
+    n = X.shape[0]
+    D = np.diag(np.sum(K, axis=1))
+    D_inv_sqrt = np.diag(1.0 / np.sqrt(np.diag(D)))  #生成D的-1/2次方的对角矩阵
+    L_sym = np.identity(n) - np.dot(np.dot(D_inv_sqrt, K), D_inv_sqrt) #equivalent eqution
+    eigvals, eigvecs = np.linalg.eigh(L_sym)
+    U = eigvecs[:, :num_clusters]
+    U = U / np.linalg.norm(U, axis=1, keepdims=True)
+    print(U)
+    clusters, frames = kmeans(U, num_clusters, img, save_frames=save_frames, frame_prefix=frame_prefix)
+    
+    
+    return clusters, frames
+
+
+# Ratio Cut
+def ratio_cut_clustering(X, K, num_clusters, img, save_frames=False, frame_prefix="frame"):
+    n = X.shape[0]
+    D = np.diag(np.sum(K, axis=1))
+    L = D - K
+    eigvals, eigvecs = np.linalg.eigh(L)
+    idx = np.argsort(eigvals)[:num_clusters]  
+    U = eigvecs[:, idx]
+    print(U)
+    clusters, frames = kmeans(U, num_clusters, img, save_frames=save_frames, frame_prefix=frame_prefix)
+    
+    return clusters, frames
