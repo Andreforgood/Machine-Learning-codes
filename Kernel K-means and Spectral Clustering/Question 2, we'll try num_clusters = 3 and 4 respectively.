@@ -1,0 +1,65 @@
+num_clusters = 3
+clusters1_kmeans, frames1_kmeans = kernel_kmeans(data1, K1, num_clusters, img1, save_frames=True, frame_prefix="kmeans_frame1_")
+print("Kernel K-means clustering for image 1 completed")
+clusters2_kmeans, frames2_kmeans = kernel_kmeans(data2, K2, num_clusters, img2, save_frames=True, frame_prefix="kmeans_frame2_")
+print("Kernel K-means clustering for image 2 completed")
+
+clusters1_ratio_cut, frames1_ratio_cut = ratio_cut_clustering(data1, K1, num_clusters, img1, save_frames=True, frame_prefix="ratiocut_frame1_")
+print("Ratio Cut clustering for image 1 completed")
+clusters2_ratio_cut, frames2_ratio_cut = ratio_cut_clustering(data2, K2, num_clusters, img2, save_frames=True, frame_prefix="ratiocut_frame2_")
+print("Ratio Cut clustering for image 2 completed")
+
+clusters1_normalized_cut, frames1_normalized_cut = normalized_cut_clustering(data1, K1, num_clusters, img1, save_frames=True, frame_prefix="normalizedcut_frame1_")
+print("Normalized Cut clustering for image 1 completed")
+clusters2_normalized_cut, frames2_normalized_cut = normalized_cut_clustering(data2, K2, num_clusters, img2, save_frames=True, frame_prefix="normalizedcut_frame2_")
+print("Normalized Cut clustering for image 2 completed")
+#-------------------------------------------------------------------------------------------------------
+
+visualize_clusters(img1, clusters1_kmeans, num_clusters, 'clusters1_kmeans_3.png')
+visualize_clusters(img2, clusters2_kmeans, num_clusters, 'clusters2_kmeans_3.png')
+visualize_clusters(img1, clusters1_ratio_cut, num_clusters, 'clusters1_ratio_cut_3.png')
+visualize_clusters(img2, clusters2_ratio_cut, num_clusters, 'clusters2_ratio_cut_3.png')
+visualize_clusters(img1, clusters1_normalized_cut, num_clusters, 'clusters1_normalized_cut_3.png')
+visualize_clusters(img2, clusters2_normalized_cut, num_clusters, 'clusters2_normalized_cut_3.png')
+
+# 保存视频或 GIF
+save_animation(frames1_kmeans, 'clusters1_kmeans_3.gif', fps=1)
+save_animation(frames2_kmeans, 'clusters2_kmeans_3.gif', fps=1)
+save_animation(frames1_ratio_cut, 'clusters1_ratio_cut_3.gif', fps=1)
+save_animation(frames2_ratio_cut, 'clusters2_ratio_cut_3.gif', fps=1)
+save_animation(frames1_normalized_cut, 'clusters1_normalized_cut_3.gif', fps=1)
+save_animation(frames2_normalized_cut, 'clusters2_normalized_cut_3.gif', fps=1)
+#--------------------------------------------------------------------------------------------------
+
+num_clusters = 4
+clusters1_kmeans, frames1_kmeans = kernel_kmeans(data1, K1, num_clusters, img1, save_frames=True, frame_prefix="kmeans_frame1_")
+print("Kernel K-means clustering for image 1 completed")
+clusters2_kmeans, frames2_kmeans = kernel_kmeans(data2, K2, num_clusters, img2, save_frames=True, frame_prefix="kmeans_frame2_")
+print("Kernel K-means clustering for image 2 completed")
+
+clusters1_ratio_cut, frames1_ratio_cut = ratio_cut_clustering(data1, K1, num_clusters, img1, save_frames=True, frame_prefix="ratiocut_frame1_")
+print("Ratio Cut clustering for image 1 completed")
+clusters2_ratio_cut, frames2_ratio_cut = ratio_cut_clustering(data2, K2, num_clusters, img2, save_frames=True, frame_prefix="ratiocut_frame2_")
+print("Ratio Cut clustering for image 2 completed")
+
+clusters1_normalized_cut, frames1_normalized_cut = normalized_cut_clustering(data1, K1, num_clusters, img1, save_frames=True, frame_prefix="normalizedcut_frame1_")
+print("Normalized Cut clustering for image 1 completed")
+clusters2_normalized_cut, frames2_normalized_cut = normalized_cut_clustering(data2, K2, num_clusters, img2, save_frames=True, frame_prefix="normalizedcut_frame2_")
+print("Normalized Cut clustering for image 2 completed")
+#-------------------------------------------------------------------------------------------------
+
+visualize_clusters(img1, clusters1_kmeans, num_clusters, 'clusters1_kmeans_4.png')
+visualize_clusters(img2, clusters2_kmeans, num_clusters, 'clusters2_kmeans_4.png')
+visualize_clusters(img1, clusters1_ratio_cut, num_clusters, 'clusters1_ratio_cut_4.png')
+visualize_clusters(img2, clusters2_ratio_cut, num_clusters, 'clusters2_ratio_cut_4.png')
+visualize_clusters(img1, clusters1_normalized_cut, num_clusters, 'clusters1_normalized_cut_4.png')
+visualize_clusters(img2, clusters2_normalized_cut, num_clusters, 'clusters2_normalized_cut_4.png')
+
+
+# 保存视频或 GIF
+save_animation(frames1_kmeans, 'clusters1_kmeans_4.gif', fps=1)
+save_animation(frames2_kmeans, 'clusters2_kmeans_4.gif', fps=1)
+save_animation(frames1_ratio_cut, 'clusters1_ratio_cut_4.gif', fps=1)
+save_animation(frames2_ratio_cut, 'clusters2_ratio_cut_4.gif', fps=1)
+save_animation(frames1_normalized_cut, 'clusters1_normalized_cut_4.gif', fps=1)
+save_animation(frames2_normalized_cut, 'clusters2_normalized_cut_4.gif', fps=1)
