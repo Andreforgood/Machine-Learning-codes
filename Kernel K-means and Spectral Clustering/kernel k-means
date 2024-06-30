@@ -1,0 +1,19 @@
+def kernel_kmeans(X, K, num_clusters, img, max_iters=1000, save_frames=False, frame_prefix="frame"):
+    n = X.shape[0]
+    clusters = np.random.randint(0, num_clusters, n)
+    frames = []
+    for i in range(max_iters):
+        centers = np.array([np.mean(K[clusters == k], axis=0) for k in range(num_clusters)])
+        distances = np.zeros((n, num_clusters))
+        for k in range(num_clusters):
+            distances[:, k] = K.diagonal() - 2 * np.dot(K, centers[k]) + np.sum(centers[k] ** 2)
+        new_clusters = np.argmin(distances, axis=1)
+        print(new_clusters)
+        if np.array_equal(clusters, new_clusters):
+            print(f"Converged after {i} iterations")
+            break
+        clusters = new_clusters
+        if save_frames:
+            frame = visualize_clusters(img, clusters, num_clusters, return_image=True)
+            frames.append(frame)
+    return clusters, frames
