@@ -1,0 +1,24 @@
+# K-means clustering
+def kmeans(U, num_clusters, img, max_iters=1000, save_frames=False, frame_prefix="frame"):
+    n, d = U.shape
+    centroids = U[np.random.choice(n, num_clusters, replace=False)]
+    frames = []
+    for i in range(max_iters):
+        print(f"Iteration {i}")
+        distances = np.linalg.norm(U[:, np.newaxis] - centroids, axis=2) 
+        #Here we use broadcast to help us calculate the distance for each pair of points
+        clusters = np.argmin(distances, axis=1)
+        new_centroids = np.array([U[clusters == k].mean(axis=0) for k in range(num_clusters)])
+        
+        print(new_centroids)
+        if np.all(centroids == new_centroids):
+            print(f"Converged after {i} iterations")
+            break
+        centroids = new_centroids
+        if save_frames:
+            frame = visualize_clusters(img, clusters, num_clusters, return_image=True)
+            frames.append(frame)
+    return clusters, frames
+
+
+## notes: As we need to save images and produce GIFs, so the above codes need to do that.
