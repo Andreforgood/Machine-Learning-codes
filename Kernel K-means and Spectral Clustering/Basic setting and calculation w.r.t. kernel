@@ -1,0 +1,27 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import imageio
+from scipy.spatial.distance import cdist
+
+# 加载图像并提取像素数据
+def load_image(file_path):
+    img = plt.imread(file_path)
+    return img
+
+#/Users/dongwenou/Downloads/ML_files/image1.png
+#/Users/dongwenou/Downloads/ML_files/image2.png
+
+
+# define the kernel function
+def kernel(x, x_prime, gamma_s, gamma_c):
+    spatial_similarity = np.exp(-gamma_s * np.sum((x[:, :2] - x_prime[:, :2])**2, axis=1))
+    color_similarity = np.exp(-gamma_c * np.sum((x[:, 2:] - x_prime[:, 2:])**2, axis=1))
+    return spatial_similarity * color_similarity
+
+# Gram matrix
+def compute_gram_matrix(X, gamma_s, gamma_c):
+    n = X.shape[0]  # num of data points.
+    K = np.zeros((n, n))  # initialization that every point is 0.
+    for i in range(n):  
+        K[i] = kernel(X[i].reshape(1, -1), X, gamma_s, gamma_c)  # call the kernel function
+    return K  
