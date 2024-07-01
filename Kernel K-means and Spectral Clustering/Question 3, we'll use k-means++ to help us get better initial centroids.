@@ -1,0 +1,35 @@
+# K-means++ initialization
+def kmeans_plus_plus_init(U, num_clusters):
+    n, d = U.shape
+    centroids = np.empty((num_clusters, d)) # initialize the centroids
+    centroids[0] = U[np.random.choice(n)] 
+    
+    for i in range(1, num_clusters):
+        distances = np.min(np.linalg.norm(U[:, np.newaxis] - centroids[:i], axis=2), axis=1) 
+        #Compute the norm along the last dimension, representing the feature space dimension, 
+        #then find the minimum along the column dimension to obtain the distance of each data point to the nearest cluster center.
+        probabilities = distances**2 / np.sum(distances**2)
+        centroids[i] = U[np.random.choice(n, p=probabilities)] # Sampling according to the given probability
+    
+    return centroids
+
+
+def kmeanspp(U, num_clusters, img, max_iters=1000, save_frames=False, frame_prefix="frame"):
+    n, d = U.shape
+    centroids = kmeans_plus_plus_init(U, num_clusters)
+    frames = []
+    
+    for i in range(max_iters):
+        print(f"Iteration {i}")
+        distances = np.linalg.norm(U[:, np.newaxis] - centroids, axis=2)
+        clusters = np.argmin(distances, axis=1)
+        new_centroids = np.array([U[clusters == k].mean(axis=0) for k in range(num_clusters)])
+        print(new_centroids)
+        if np.all(centroids == new_centroids):
+            print(f"Converged after {i} iterations")
+            break
+        centroids = new_centroids
+        if save_frames:
+            frame = visualize_clusters(img, clusters, num_clusters, return_image=True)
+            frames.append(frame)
+    return clusters, frames
