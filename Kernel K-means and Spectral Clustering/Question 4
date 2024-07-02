@@ -1,0 +1,69 @@
+Below is the last question, 
+and we'll examine whether the data points within the same cluster do have the same coordinates in the eigenspace of graph Laplacian¶
+
+def plot_eigenspace_clusters(U, clusters, num_clusters, title):
+    plt.figure(figsize=(8, 6))
+    for k in range(num_clusters):
+        cluster_points = U[clusters == k]
+        plt.scatter(cluster_points[:, 0], cluster_points[:, 1], label=f'Cluster {k}')
+    plt.title(title)
+    plt.xlabel('Eig1')
+    plt.ylabel('Eig2')
+    plt.legend()
+    plt.show()
+
+# K-means simple version
+def new_kmeans(U, num_clusters, max_iters=100):
+    n, d = U.shape
+    centroids = U[np.random.choice(n, num_clusters, replace=False)]
+    clusters = np.zeros(n)
+    for i in range(max_iters):
+        print(f"Iteration {i}")
+        distances = np.linalg.norm(U[:, np.newaxis] - centroids, axis=2)
+        new_clusters = np.argmin(distances, axis=1)
+        print(new_clusters)
+        if np.array_equal(clusters, new_clusters):
+            print(f"Converged after {i} iterations")
+            break
+        clusters = new_clusters
+        centroids = np.array([U[clusters == k].mean(axis=0) for k in range(num_clusters)])
+    return clusters
+
+#spectral clustering simple version.
+def new_spectral_clustering(X, K, num_clusters, method="ratio_cut"):
+    n = X.shape[0]
+    D = np.diag(np.sum(K, axis=1))
+    
+    if method == "ratio_cut":
+        L = D - K
+    elif method == "normalized_cut":
+        D_inv_sqrt = np.diag(1.0 / np.sqrt(np.diag(D)))
+        L = np.identity(n) - np.dot(np.dot(D_inv_sqrt, K), D_inv_sqrt)
+    
+    eigvals, eigvecs = np.linalg.eigh(L)
+    idx = np.argsort(eigvals)[:num_clusters]
+    U = eigvecs[:, idx]
+    
+    clusters = new_kmeans(U, num_clusters)
+    return clusters, U
+
+
+num_clusters = 3
+
+# Ratio Cut clustering
+clusters1_ratio_cut, U1_ratio_cut = new_spectral_clustering(data1, K1, num_clusters, method="ratio_cut")
+print("Ratio Cut clustering for image 1 completed")
+clusters2_ratio_cut, U2_ratio_cut = new_spectral_clustering(data2, K2, num_clusters, method="ratio_cut")
+print("Ratio Cut clustering for image 2 completed")
+
+# Normalized Cut clustering
+clusters1_normalized_cut, U1_normalized_cut = new_spectral_clustering(data1, K1, num_clusters, method="normalized_cut")
+print("Normalized Cut clustering for image 1 completed")
+clusters2_normalized_cut, U2_normalized_cut = new_spectral_clustering(data2, K2, num_clusters, method="normalized_cut")
+print("Normalized Cut clustering for image 2 completed")
+
+# plot the outcomes of clustering in the eigenspace.
+plot_eigenspace_clusters(U1_ratio_cut, clusters1_ratio_cut, num_clusters, title="Ratio Cut Clustering for Image 1")
+plot_eigenspace_clusters(U2_ratio_cut, clusters2_ratio_cut, num_clusters, title="Ratio Cut Clustering for Image 2")
+plot_eigenspace_clusters(U1_normalized_cut, clusters1_normalized_cut, num_clusters, title="Normalized Cut Clustering for Image 1")
+plot_eigenspace_clusters(U2_normalized_cut, clusters2_normalized_cut, num_clusters, title="Normalized Cut Clustering for Image 2")
