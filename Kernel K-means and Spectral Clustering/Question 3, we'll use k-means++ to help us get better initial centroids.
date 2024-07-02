@@ -33,3 +33,100 @@ def kmeanspp(U, num_clusters, img, max_iters=1000, save_frames=False, frame_pref
             frame = visualize_clusters(img, clusters, num_clusters, return_image=True)
             frames.append(frame)
     return clusters, frames
+
+
+def kmeans_plus_plus_init_idx(K, num_clusters):
+    n = K.shape[0]
+    K_max = np.max(K)
+    distances = np.sqrt(K_max - K)  # transfer the similarity to distance
+    centroids_idx = [np.random.choice(n)]
+    
+    for i in range(1, num_clusters):
+        min_distances = np.min(distances[:, centroids_idx], axis=1)
+        probabilities = min_distances / np.sum(min_distances)
+        
+        # make sure that the centroid differs with the ones having been selected.
+        new_centroid = np.random.choice(n, p=probabilities)
+        while new_centroid in centroids_idx:
+            new_centroid = np.random.choice(n, p=probabilities)
+        
+        centroids_idx.append(new_centroid)
+    
+    print(f'kmeanspp init is {centroids_idx}')
+    return centroids_idx
+
+
+def kernel_kmeanspp(X, K, num_clusters, img, max_iters=1000, save_frames=False, frame_prefix="frame"):
+    n = X.shape[0]
+
+    # 使用 K-means++ 初始化
+    centroids_idx = kmeans_plus_plus_init_idx(K, num_clusters) #比如第0列和第2列
+    clusters = np.argmax(K[:, centroids_idx], axis=1) #选择距离最小的列的索引
+    print(clusters)
+    frames = []
+    
+    for i in range(max_iters):
+        centers = np.array([np.mean(K[clusters == k], axis=0) for k in range(num_clusters)])
+        distances = np.zeros((n, num_clusters))
+        for k in range(num_clusters):
+            distances[:, k] = K.diagonal() - 2 * np.dot(K, centers[k]) + np.sum(centers[k] ** 2)
+        new_clusters = np.argmin(distances, axis=1)
+        print(new_clusters)
+        if np.array_equal(clusters, new_clusters):
+            print(f"Converged after {i} iterations")
+            break
+        clusters = new_clusters
+        if save_frames:
+            frame = visualize_clusters(img, clusters, num_clusters, return_image=True)
+            frames.append(frame)
+    return clusters, frames
+
+def spectral_clustering_pp(X, K, num_clusters, img, method="ratio_cut", save_frames=False, frame_prefix="frame", init_method="random"):
+    n = X.shape[0]
+    D = np.diag(np.sum(K, axis=1))
+    
+    if method == "ratio_cut":
+        L = D - K
+    elif method == "normalized_cut":
+        D_inv_sqrt = np.diag(1.0 / np.sqrt(np.diag(D)))
+        L = np.identity(n) - np.dot(np.dot(D_inv_sqrt, K), D_inv_sqrt)
+    
+    eigvals, eigvecs = np.linalg.eigh(L)
+    idx = np.argsort(eigvals)[:num_clusters]
+    U = eigvecs[:, idx]
+    
+    clusters, frames = kmeanspp(U, num_clusters, img, save_frames=save_frames, frame_prefix=frame_prefix)
+    return clusters, frames
+
+num_clusters = 5
+clusters1_kmeans, frames1_kmeans = kernel_kmeanspp(data1, K1, num_clusters, img1, save_frames=True, frame_prefix="kmeans_frame1_")
+print("Kernel K-means clustering for image 1 completed")
+clusters2_kmeans, frames2_kmeans = kernel_kmeanspp(data2, K2, num_clusters, img2, save_frames=True, frame_prefix="kmeans_frame2_")
+print("Kernel K-means clustering for image 2 completed")
+
+clusters1_ratio_cut, frames1_ratio_cut = spectral_clustering_pp(data1, K1, num_clusters, img1, method="ratio_cut",save_frames=True, frame_prefix="ratiocut_frame1_")
+print("Ratio Cut clustering for image 1 completed")
+clusters2_ratio_cut, frames2_ratio_cut = spectral_clustering_pp(data2, K2, num_clusters, img2, method="ratio_cut",save_frames=True, frame_prefix="ratiocut_frame2_")
+print("Ratio Cut clustering for image 2 completed")
+
+clusters1_normalized_cut, frames1_normalized_cut = spectral_clustering_pp(data1, K1, num_clusters, img1, method = "normalized_cut", save_frames=True, frame_prefix="normalizedcut_frame1_")
+print("Normalized Cut clustering for image 1 completed")
+clusters2_normalized_cut, frames2_normalized_cut = spectral_clustering_pp(data2, K2, num_clusters, img2, method = "normalized_cut", save_frames=True, frame_prefix="normalizedcut_frame2_")
+print("Normalized Cut clustering for image 2 completed")
+
+
+visualize_clusters(img1, clusters1_kmeans, num_clusters, 'clusters1_kmeans_5pp.png')
+visualize_clusters(img2, clusters2_kmeans, num_clusters, 'clusters2_kmeans_5pp.png')
+visualize_clusters(img1, clusters1_ratio_cut, num_clusters, 'clusters1_ratio_cut_5pp.png')
+visualize_clusters(img2, clusters2_ratio_cut, num_clusters, 'clusters2_ratio_cut_5pp.png')
+visualize_clusters(img1, clusters1_normalized_cut, num_clusters, 'clusters1_normalized_cut_5pp.png')
+visualize_clusters(img2, clusters2_normalized_cut, num_clusters, 'clusters2_normalized_cut_5pp.png')
+
+
+# GIF
+save_animation(frames1_kmeans, 'clusters1_kmeans_5pp.gif', fps=1)
+save_animation(frames2_kmeans, 'clusters2_kmeans_5pp.gif', fps=1)
+save_animation(frames1_ratio_cut, 'clusters1_ratio_cut_5pp.gif', fps=1)
+save_animation(frames2_ratio_cut, 'clusters2_ratio_cut_5pp.gif', fps=1)
+save_animation(frames1_normalized_cut, 'clusters1_normalized_cut_5pp.gif', fps=1)
+save_animation(frames2_normalized_cut, 'clusters2_normalized_cut_5pp.gif', fps=1)
